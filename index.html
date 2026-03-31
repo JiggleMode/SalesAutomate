@@ -1,0 +1,1534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0F6E56">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="SalesForce Pro">
+  <meta name="description" content="Field Sales Force Automation App">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <title>SalesForce Pro</title>
+  <style>
+    /* ===== RESET & BASE ===== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    html, body { height: 100%; overflow: hidden; background: #0a0a0a; }
+    body { font-family: 'DM Sans', sans-serif; font-size: 15px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+
+    /* ===== CSS VARIABLES ===== */
+    :root {
+      --green: #1D9E75; --green-dark: #0F6E56; --green-deep: #085041;
+      --green-light: #E1F5EE; --green-mid: #9FE1CB;
+      --blue: #378ADD; --blue-light: #E6F1FB;
+      --amber: #EF9F27; --amber-light: #FAEEDA;
+      --coral: #D85A30; --coral-light: #FAECE7;
+      --purple: #7F77DD; --purple-light: #EEEDFE;
+      --red: #E24B4A; --red-light: #FCEBEB;
+      --bg: #ffffff; --bg2: #f8f9fa; --bg3: #f1f3f4;
+      --txt: #111111; --txt2: #555555; --txt3: #999999;
+      --border: rgba(0,0,0,0.08); --border2: rgba(0,0,0,0.14);
+      --shadow: 0 2px 12px rgba(0,0,0,0.08);
+      --r: 10px; --rl: 14px; --rxl: 20px;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    /* ===== APP SHELL ===== */
+    #app {
+      height: 100dvh;
+      max-width: 430px;
+      margin: 0 auto;
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* ===== STATUS BAR ===== */
+    .statusbar {
+      background: var(--green-dark);
+      color: rgba(255,255,255,0.7);
+      font-size: 11px;
+      font-family: 'DM Mono', monospace;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: calc(var(--safe-top) + 4px) 14px 5px;
+      flex-shrink: 0;
+    }
+
+    /* ===== TOP NAV ===== */
+    .topnav {
+      background: var(--green-dark);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px 12px;
+      flex-shrink: 0;
+    }
+    .topnav-back {
+      width: 32px; height: 32px;
+      display: none; align-items: center; justify-content: center;
+      cursor: pointer; border-radius: 50%;
+      background: rgba(255,255,255,0.15);
+      border: none; color: #fff; flex-shrink: 0;
+    }
+    .topnav-back.visible { display: flex; }
+    .topnav-title { font-size: 16px; font-weight: 600; flex: 1; letter-spacing: -0.2px; }
+    .topnav-actions { display: flex; gap: 6px; align-items: center; }
+    .icon-btn {
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.15);
+      border: none; color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; position: relative; flex-shrink: 0;
+    }
+    .icon-btn svg { width: 18px; height: 18px; }
+    .notif-badge {
+      position: absolute; top: 2px; right: 2px;
+      width: 15px; height: 15px;
+      background: var(--red); border-radius: 50%;
+      font-size: 9px; font-weight: 600;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; border: 2px solid var(--green-dark);
+    }
+    .avatar-chip {
+      height: 32px; border-radius: 16px;
+      background: rgba(255,255,255,0.2);
+      display: flex; align-items: center; gap: 6px;
+      padding: 0 10px 0 4px;
+      font-size: 12px; font-weight: 600;
+    }
+    .avatar-circle {
+      width: 24px; height: 24px; border-radius: 50%;
+      background: rgba(255,255,255,0.9);
+      color: var(--green-dark);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; font-weight: 700;
+    }
+
+    /* ===== SCREENS ===== */
+    .screens { flex: 1; overflow: hidden; position: relative; background: var(--bg3); }
+    .screen {
+      position: absolute; inset: 0;
+      overflow-y: auto; overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 80px;
+      display: none;
+      background: var(--bg3);
+    }
+    .screen.active { display: block; animation: slideIn 0.22s ease; }
+    @keyframes slideIn { from { opacity: 0; transform: translateX(18px); } to { opacity: 1; transform: translateX(0); } }
+
+    /* ===== BOTTOM NAV ===== */
+    .bottomnav {
+      background: var(--bg);
+      border-top: 1px solid var(--border);
+      display: flex;
+      flex-shrink: 0;
+      padding-bottom: var(--safe-bottom);
+      box-shadow: 0 -2px 12px rgba(0,0,0,0.06);
+    }
+    .bnav-item {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; gap: 2px;
+      padding: 8px 0 6px;
+      cursor: pointer; color: var(--txt3);
+      font-size: 10px; font-weight: 500;
+      transition: color 0.2s;
+      border: none; background: none;
+    }
+    .bnav-item svg { width: 22px; height: 22px; stroke-width: 1.6; }
+    .bnav-item.active { color: var(--green); }
+    .bnav-dot {
+      width: 4px; height: 4px; border-radius: 2px;
+      background: var(--green);
+      margin: 0 auto;
+      transition: all 0.2s;
+      opacity: 0;
+    }
+    .bnav-item.active .bnav-dot { opacity: 1; }
+
+    /* ===== HOME SCREEN ===== */
+    .hero-banner {
+      background: linear-gradient(135deg, var(--green-dark) 0%, var(--green) 100%);
+      padding: 16px 16px 20px;
+      color: #fff;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-banner::after {
+      content: '';
+      position: absolute;
+      right: -30px; top: -30px;
+      width: 160px; height: 160px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.05);
+    }
+    .hero-greeting { font-size: 20px; font-weight: 600; letter-spacing: -0.3px; }
+    .hero-date { font-size: 13px; opacity: 0.7; margin-top: 2px; }
+    .hero-chips { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+    .hero-chip {
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 20px;
+      padding: 4px 10px;
+      font-size: 12px;
+      display: flex; align-items: center; gap: 4px;
+    }
+    .hero-chip strong { font-size: 13px; }
+
+    /* ===== QUICK ACTIONS ===== */
+    .quick-actions {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 8px; padding: 14px 12px 4px;
+    }
+    .qa-btn {
+      background: var(--bg); border-radius: var(--rl);
+      border: 1px solid var(--border);
+      padding: 12px 6px;
+      display: flex; flex-direction: column;
+      align-items: center; gap: 6px;
+      cursor: pointer;
+      transition: all 0.15s;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .qa-btn:active { transform: scale(0.95); }
+    .qa-icon {
+      width: 40px; height: 40px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+    }
+    .qa-label { font-size: 11px; font-weight: 500; color: var(--txt2); text-align: center; }
+
+    /* ===== SECTION HEADER ===== */
+    .sec-head {
+      font-size: 13px; font-weight: 600;
+      color: var(--txt2);
+      padding: 12px 14px 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* ===== CARDS ===== */
+    .card {
+      background: var(--bg);
+      border-radius: var(--rl);
+      border: 1px solid var(--border);
+      margin: 0 12px 10px;
+      overflow: hidden;
+    }
+    .card-body { padding: 14px; }
+    .card-title { font-size: 12px; font-weight: 600; color: var(--txt3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+
+    /* ===== METRICS GRID ===== */
+    .metrics-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 8px; padding: 6px 12px 4px;
+    }
+    .metric-card {
+      background: var(--bg); border-radius: var(--rl);
+      border: 1px solid var(--border); padding: 12px;
+    }
+    .metric-label { font-size: 11px; font-weight: 600; color: var(--txt3); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 4px; }
+    .metric-val { font-size: 24px; font-weight: 600; letter-spacing: -0.5px; }
+    .metric-val.green { color: var(--green); }
+    .metric-val.blue { color: var(--blue); }
+    .metric-val.amber { color: var(--amber); }
+    .metric-val.coral { color: var(--coral); }
+    .metric-sub { font-size: 11px; color: var(--txt3); margin-top: 2px; }
+    .prog { height: 4px; background: var(--bg3); border-radius: 2px; margin: 6px 0; overflow: hidden; }
+    .prog-fill { height: 100%; border-radius: 2px; transition: width 0.8s ease; }
+
+    /* ===== LIST ROWS ===== */
+    .list-row {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg);
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .list-row:last-child { border-bottom: none; }
+    .list-row:active { background: var(--bg2); }
+    .row-icon {
+      width: 40px; height: 40px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; flex-shrink: 0;
+    }
+    .row-main { flex: 1; min-width: 0; }
+    .row-title { font-size: 14px; font-weight: 500; color: var(--txt); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .row-sub { font-size: 12px; color: var(--txt3); margin-top: 1px; }
+    .row-right { flex-shrink: 0; text-align: right; }
+
+    /* ===== PILLS ===== */
+    .pill {
+      display: inline-flex; align-items: center;
+      font-size: 11px; font-weight: 600;
+      padding: 3px 8px; border-radius: 20px;
+    }
+    .pill.green { background: var(--green-light); color: var(--green-deep); }
+    .pill.amber { background: var(--amber-light); color: #633806; }
+    .pill.red { background: var(--red-light); color: #A32D2D; }
+    .pill.blue { background: var(--blue-light); color: #0C447C; }
+    .pill.purple { background: var(--purple-light); color: #3C3489; }
+
+    /* ===== TABS ===== */
+    .tabs {
+      display: flex;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; z-index: 10;
+    }
+    .tab-item {
+      flex: 1; text-align: center;
+      padding: 11px 4px;
+      font-size: 13px; font-weight: 600;
+      color: var(--txt3);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+    }
+    .tab-item.active { color: var(--green); border-bottom-color: var(--green); }
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; }
+
+    /* ===== FORMS ===== */
+    .form-section { padding: 0 12px; }
+    .field { margin-bottom: 12px; }
+    .field label { font-size: 12px; font-weight: 600; color: var(--txt2); display: block; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.3px; }
+    .field input, .field select, .field textarea {
+      width: 100%; padding: 11px 12px;
+      font-size: 15px; font-family: 'DM Sans', sans-serif;
+      border: 1.5px solid var(--border2);
+      border-radius: var(--r); background: var(--bg);
+      color: var(--txt); appearance: none;
+      transition: border-color 0.2s;
+    }
+    .field input:focus, .field select:focus, .field textarea:focus {
+      outline: none; border-color: var(--green);
+    }
+    .field textarea { resize: none; height: 80px; line-height: 1.5; }
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+    /* ===== BUTTONS ===== */
+    .btn {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 13px 20px; border-radius: var(--r);
+      font-size: 15px; font-weight: 600; font-family: 'DM Sans', sans-serif;
+      cursor: pointer; border: none;
+      transition: all 0.15s;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn.primary { background: var(--green); color: #fff; }
+    .btn.primary:hover { background: var(--green-dark); }
+    .btn.outline { background: transparent; color: var(--green); border: 1.5px solid var(--green); }
+    .btn.full { width: 100%; }
+    .btn.small { padding: 8px 14px; font-size: 13px; }
+    .btn-group { padding: 4px 12px 12px; display: flex; flex-direction: column; gap: 8px; }
+
+    /* ===== TOGGLE ===== */
+    .toggle-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 13px 14px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg);
+    }
+    .toggle-row:last-child { border-bottom: none; }
+    .toggle-label { font-size: 14px; font-weight: 500; color: var(--txt); }
+    .toggle-sub { font-size: 12px; color: var(--txt3); margin-top: 1px; }
+    .toggle {
+      width: 44px; height: 26px; border-radius: 13px;
+      background: var(--bg3); border: 1.5px solid var(--border2);
+      position: relative; cursor: pointer;
+      transition: background 0.25s, border-color 0.25s;
+      flex-shrink: 0;
+    }
+    .toggle::after {
+      content: ''; width: 18px; height: 18px;
+      background: #fff; border-radius: 50%;
+      position: absolute; top: 2px; left: 2px;
+      transition: left 0.25s, background 0.25s;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+    }
+    .toggle.on { background: var(--green); border-color: var(--green); }
+    .toggle.on::after { left: 22px; }
+
+    /* ===== MAP BOX ===== */
+    .map-box {
+      margin: 12px 12px 0;
+      height: 160px;
+      border-radius: var(--rl);
+      overflow: hidden;
+      position: relative;
+      background: #e8f5f0;
+      border: 1px solid var(--border);
+    }
+    .map-grid {
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(29,158,117,0.12) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(29,158,117,0.12) 1px, transparent 1px);
+      background-size: 30px 30px;
+    }
+    .map-road-h {
+      position: absolute; left: 0; right: 0;
+      height: 3px; background: rgba(255,255,255,0.7);
+    }
+    .map-road-v {
+      position: absolute; top: 0; bottom: 0;
+      width: 3px; background: rgba(255,255,255,0.7);
+    }
+    .map-pin {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -60%);
+      display: flex; flex-direction: column; align-items: center;
+    }
+    .map-pin-dot {
+      width: 16px; height: 16px; background: var(--red);
+      border-radius: 50% 50% 50% 0; transform: rotate(-45deg);
+      border: 2px solid #fff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      animation: pulsePing 2s infinite;
+    }
+    @keyframes pulsePing {
+      0%, 100% { box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+      50% { box-shadow: 0 2px 8px rgba(0,0,0,0.3), 0 0 0 6px rgba(226,75,74,0.2); }
+    }
+    .map-pin-label {
+      background: #fff; color: var(--txt);
+      font-size: 11px; font-weight: 600;
+      padding: 3px 8px; border-radius: 6px;
+      margin-top: 8px; white-space: nowrap;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    .map-accuracy {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 60px; height: 60px;
+      border-radius: 50%;
+      background: rgba(29,158,117,0.1);
+      border: 1px solid rgba(29,158,117,0.3);
+    }
+    .map-footer {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      background: rgba(255,255,255,0.9);
+      padding: 6px 12px;
+      font-size: 11px; color: var(--txt2);
+      display: flex; align-items: center; gap: 6px;
+      border-top: 1px solid var(--border);
+    }
+    .gps-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); animation: blink 1.5s infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+    /* ===== CHECKIN CONFIRM ===== */
+    .checkin-success {
+      background: var(--green-light); border: 1.5px solid var(--green);
+      border-radius: var(--rl); margin: 0 12px 12px;
+      padding: 14px;
+      display: none; align-items: center; gap: 12px;
+      animation: pop 0.3s ease;
+    }
+    .checkin-success.show { display: flex; }
+    @keyframes pop { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    .ci-check { width: 36px; height: 36px; border-radius: 50%; background: var(--green); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+    /* ===== SCORE RING ===== */
+    .score-ring-wrap { display: flex; align-items: center; gap: 16px; }
+    .score-ring { position: relative; width: 80px; height: 80px; flex-shrink: 0; }
+    .score-ring svg { transform: rotate(-90deg); }
+    .score-ring-text {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; font-weight: 700; color: var(--txt);
+    }
+
+    /* ===== BAR CHART ===== */
+    .bar-chart { display: flex; align-items: flex-end; gap: 4px; height: 90px; }
+    .bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    .bar-fill { width: 100%; border-radius: 4px 4px 0 0; transition: height 0.6s ease; }
+    .bar-lbl { font-size: 10px; color: var(--txt3); font-family: 'DM Mono', monospace; }
+
+    /* ===== STATUS DOTS ===== */
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .status-dot.green { background: var(--green); }
+    .status-dot.amber { background: var(--amber); }
+    .status-dot.red { background: var(--red); }
+    .status-dot.blue { background: var(--blue); }
+
+    /* ===== STEP INDICATOR ===== */
+    .step-badge {
+      width: 26px; height: 26px; border-radius: 50%;
+      background: var(--bg3); color: var(--txt3);
+      font-size: 11px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .step-badge.done { background: var(--green); color: #fff; }
+    .step-badge.active { background: var(--blue); color: #fff; }
+
+    /* ===== ACTIVE VISIT BANNER ===== */
+    .active-visit {
+      margin: 12px 12px 0;
+      background: var(--green-dark);
+      border-radius: var(--rl); color: #fff;
+      padding: 12px 14px;
+      display: flex; align-items: center; gap: 12px;
+      cursor: pointer;
+    }
+    .av-icon { width: 42px; height: 42px; border-radius: 12px; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+    .av-pulse { width: 8px; height: 8px; border-radius: 50%; background: #4ade80; flex-shrink: 0; box-shadow: 0 0 0 3px rgba(74,222,128,0.3); animation: pulsate 2s infinite; }
+    @keyframes pulsate { 0%,100%{box-shadow:0 0 0 3px rgba(74,222,128,0.3)} 50%{box-shadow:0 0 0 6px rgba(74,222,128,0.15)} }
+
+    /* ===== AMOUNT DISPLAY ===== */
+    .amount-big { font-size: 28px; font-weight: 700; color: var(--txt); letter-spacing: -1px; font-family: 'DM Mono', monospace; }
+    .amount-currency { font-size: 16px; color: var(--txt2); font-weight: 500; }
+
+    /* ===== EMPTY STATE ===== */
+    .empty-state { text-align: center; padding: 40px 20px; color: var(--txt3); }
+    .empty-state .es-icon { font-size: 40px; margin-bottom: 10px; }
+    .empty-state p { font-size: 14px; }
+
+    /* ===== NOTIFICATION ITEM ===== */
+    .notif-item {
+      background: var(--bg); border-radius: var(--rl);
+      border: 1px solid var(--border); margin: 0 12px 8px;
+      padding: 12px 14px;
+    }
+    .notif-item.unread { border-left: 3px solid var(--green); }
+    .notif-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+
+    /* ===== DIVIDER ===== */
+    .divider { height: 1px; background: var(--border); margin: 0 14px; }
+
+    /* ===== TOAST ===== */
+    #toast {
+      position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%);
+      background: var(--txt); color: #fff;
+      padding: 10px 18px; border-radius: 20px;
+      font-size: 13px; font-weight: 500;
+      z-index: 1000; display: none;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+      animation: toastIn 0.3s ease;
+    }
+    @keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+
+    /* ===== MODAL ===== */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 200;
+      display: none; align-items: flex-end;
+      animation: fadeIn 0.2s ease;
+    }
+    .modal-overlay.show { display: flex; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .modal-sheet {
+      background: var(--bg); width: 100%;
+      border-radius: 20px 20px 0 0;
+      padding: 0 0 calc(var(--safe-bottom) + 20px);
+      animation: sheetUp 0.3s ease;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+    @keyframes sheetUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    .modal-handle { width: 40px; height: 4px; border-radius: 2px; background: var(--bg3); margin: 12px auto 0; }
+    .modal-title { font-size: 17px; font-weight: 700; padding: 14px 16px 10px; }
+
+    /* ===== PROFILE ===== */
+    .profile-header { background: linear-gradient(135deg, var(--green-dark), var(--green)); padding: 20px 16px 24px; color: #fff; text-align: center; }
+    .profile-avatar { width: 72px; height: 72px; border-radius: 50%; background: rgba(255,255,255,0.25); font-size: 24px; font-weight: 700; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; border: 3px solid rgba(255,255,255,0.5); }
+    .profile-name { font-size: 20px; font-weight: 700; }
+    .profile-role { font-size: 13px; opacity: 0.8; margin-top: 3px; }
+    .profile-stats { display: flex; gap: 0; margin-top: 16px; background: rgba(255,255,255,0.1); border-radius: 12px; overflow: hidden; }
+    .profile-stat { flex: 1; padding: 10px; text-align: center; border-right: 1px solid rgba(255,255,255,0.15); }
+    .profile-stat:last-child { border-right: none; }
+    .ps-val { font-size: 18px; font-weight: 700; }
+    .ps-lbl { font-size: 10px; opacity: 0.7; margin-top: 2px; }
+
+    /* ===== OFFLINE BANNER ===== */
+    #offline-banner {
+      display: none; background: var(--amber); color: #fff;
+      text-align: center; padding: 6px;
+      font-size: 12px; font-weight: 600;
+    }
+
+    /* ===== SCROLLBAR ===== */
+    ::-webkit-scrollbar { width: 0; }
+  </style>
+</head>
+<body>
+
+<div id="toast"></div>
+
+<!-- Lead Modal -->
+<div class="modal-overlay" id="leadModal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Add new lead</div>
+    <div style="padding: 0 16px 12px;">
+      <div class="field"><label>Business name</label><input type="text" id="lead-name" placeholder="Enter outlet / company name"></div>
+      <div class="field"><label>Contact person</label><input type="text" id="lead-contact" placeholder="Name & designation"></div>
+      <div class="field"><label>Phone</label><input type="tel" id="lead-phone" placeholder="+91 98765 43210"></div>
+      <div class="field"><label>Stage</label>
+        <select id="lead-stage">
+          <option value="New">New prospect</option>
+          <option value="Contacted">Contacted</option>
+          <option value="Demo">Demo done</option>
+          <option value="Proposal">Proposal sent</option>
+          <option value="Negotiation">Negotiation</option>
+        </select>
+      </div>
+      <div class="field"><label>Notes</label><textarea id="lead-notes" placeholder="Initial discussion, requirements, next steps…"></textarea></div>
+      <button class="btn primary full" onclick="saveLead()">Save lead</button>
+    </div>
+  </div>
+</div>
+
+<!-- Meeting Note Modal -->
+<div class="modal-overlay" id="meetingModal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="meeting-modal-title">Meeting notes</div>
+    <div style="padding: 0 16px 12px;">
+      <div class="field"><label>Customer</label><input type="text" id="meeting-customer" placeholder="Customer / outlet name"></div>
+      <div class="field"><label>Contact met</label><input type="text" id="meeting-contact" placeholder="Name & role"></div>
+      <div class="field"><label>Discussion notes</label><textarea id="meeting-notes" style="height:100px;" placeholder="What was discussed, agreed, etc."></textarea></div>
+      <div class="field"><label>Follow-up action</label><input type="text" id="meeting-followup" placeholder="Next step & due date"></div>
+      <div class="field"><label>Outcome</label>
+        <select id="meeting-outcome">
+          <option>Order placed</option>
+          <option>Follow-up needed</option>
+          <option>No decision</option>
+          <option>Not interested</option>
+          <option>Information shared</option>
+        </select>
+      </div>
+      <button class="btn primary full" onclick="saveMeetingNote()">Save note</button>
+    </div>
+  </div>
+</div>
+
+<div id="app">
+  <div id="offline-banner">You're offline — changes will sync when online</div>
+  <div class="statusbar">
+    <span id="time-display">9:41 AM</span>
+    <span>SalesForce Pro</span>
+    <span id="location-status">Mumbai · GPS ●</span>
+  </div>
+
+  <div class="topnav">
+    <button class="topnav-back" id="back-btn" onclick="goBack()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+    </button>
+    <div class="topnav-title" id="nav-title">Good morning, Ravi 👋</div>
+    <div class="topnav-actions">
+      <button class="icon-btn" onclick="goTo('notifications')" title="Notifications">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+        <div class="notif-badge" id="notif-count">3</div>
+      </button>
+      <div class="avatar-chip" onclick="goTo('profile')">
+        <div class="avatar-circle">RK</div>
+        <span>Ravi</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="screens">
+
+    <!-- ===== HOME ===== -->
+    <div class="screen active" id="screen-home">
+      <div class="hero-banner">
+        <div class="hero-greeting">Good morning, Ravi 👋</div>
+        <div class="hero-date" id="hero-date">Tuesday, 31 March 2026 · Mumbai West</div>
+        <div class="hero-chips">
+          <div class="hero-chip"><strong>8</strong> visits today</div>
+          <div class="hero-chip"><strong>74%</strong> MTD target</div>
+          <div class="hero-chip"><strong>2</strong> claims pending</div>
+        </div>
+      </div>
+
+      <div class="active-visit" onclick="goTo('checkin')">
+        <div class="av-icon">🏬</div>
+        <div style="flex:1;">
+          <div style="font-size:13px;opacity:0.7;font-weight:500;">CURRENT STOP</div>
+          <div style="font-size:15px;font-weight:600;margin-top:1px;">Reliance Fresh – Bandra W</div>
+          <div style="font-size:12px;opacity:0.7;margin-top:2px;">Checked in 11:04 AM · PJP stop #2</div>
+        </div>
+        <div class="av-pulse"></div>
+      </div>
+
+      <div class="quick-actions">
+        <button class="qa-btn" onclick="goTo('checkin')">
+          <div class="qa-icon" style="background:#E1F5EE;">📍</div>
+          <div class="qa-label">Check In</div>
+        </button>
+        <button class="qa-btn" onclick="openLeadModal()">
+          <div class="qa-icon" style="background:#E6F1FB;">👥</div>
+          <div class="qa-label">New Lead</div>
+        </button>
+        <button class="qa-btn" onclick="openMeetingModal('Quick meeting')">
+          <div class="qa-icon" style="background:#FAEEDA;">📝</div>
+          <div class="qa-label">Meeting Note</div>
+        </button>
+        <button class="qa-btn" onclick="goTo('claims')">
+          <div class="qa-icon" style="background:#FAECE7;">💸</div>
+          <div class="qa-label">Add Claim</div>
+        </button>
+      </div>
+
+      <div class="sec-head">Today's PJP</div>
+      <div class="card">
+        <div class="list-row" onclick="goTo('pjp')">
+          <div class="step-badge done">✓</div>
+          <div class="row-main"><div class="row-title">Metro Supermart – Andheri</div><div class="row-sub">9:30 AM · Checked in 9:28 AM</div></div>
+          <span class="pill green">Done</span>
+        </div>
+        <div class="list-row" style="background:var(--green-light);" onclick="goTo('checkin')">
+          <div class="step-badge active">2</div>
+          <div class="row-main"><div class="row-title">Reliance Fresh – Bandra W</div><div class="row-sub">11:00 AM · In progress</div></div>
+          <span class="pill blue">Active</span>
+        </div>
+        <div class="list-row" onclick="goTo('pjp')">
+          <div class="step-badge">3</div>
+          <div class="row-main"><div class="row-title">Café Coffee Day – Juhu</div><div class="row-sub">1:00 PM · Upcoming</div></div>
+          <span class="pill amber">Pending</span>
+        </div>
+      </div>
+
+      <div class="sec-head">MTD snapshot</div>
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-label">Revenue</div>
+          <div class="metric-val green"><span class="amount-currency">₹</span>42L</div>
+          <div class="prog"><div class="prog-fill" style="width:74%;background:var(--green);"></div></div>
+          <div class="metric-sub">74% of ₹57L target</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Visits</div>
+          <div class="metric-val blue">148</div>
+          <div class="prog"><div class="prog-fill" style="width:68%;background:var(--blue);"></div></div>
+          <div class="metric-sub">68% of 218 planned</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">New orders</div>
+          <div class="metric-val amber">31</div>
+          <div class="prog"><div class="prog-fill" style="width:82%;background:var(--amber);"></div></div>
+          <div class="metric-sub">82% of 38 target</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Open leads</div>
+          <div class="metric-val coral">12</div>
+          <div class="prog"><div class="prog-fill" style="width:40%;background:var(--coral);"></div></div>
+          <div class="metric-sub">5 follow-ups due</div>
+        </div>
+      </div>
+      <div style="height:16px;"></div>
+    </div>
+
+    <!-- ===== PJP ===== -->
+    <div class="screen" id="screen-pjp">
+      <div class="tabs">
+        <div class="tab-item active" onclick="switchTab(this,'pjp-today')">Today</div>
+        <div class="tab-item" onclick="switchTab(this,'pjp-week')">This week</div>
+        <div class="tab-item" onclick="switchTab(this,'pjp-month')">Month</div>
+      </div>
+      <div id="pjp-today" class="tab-pane active">
+        <div style="padding:10px 12px 4px;">
+          <div style="background:var(--blue-light);border-radius:var(--rl);padding:10px 12px;font-size:13px;color:#0C447C;">
+            <strong>5 stops planned</strong> · 1 done · 1 active · 3 pending · ~38km route
+          </div>
+        </div>
+        <div class="card">
+          <div class="list-row">
+            <div class="step-badge done">✓</div>
+            <div class="row-main"><div class="row-title">Metro Supermart – Andheri W</div><div class="row-sub">9:30 AM · Distributor · Checked in 9:28 AM</div></div>
+            <span class="pill green">Done</span>
+          </div>
+          <div class="list-row" style="background:var(--green-light);">
+            <div class="step-badge active">2</div>
+            <div class="row-main"><div class="row-title">Reliance Fresh – Bandra W</div><div class="row-sub">11:00 AM · Key account · Active</div></div>
+            <span class="pill blue">Active</span>
+          </div>
+          <div class="list-row" onclick="openMeetingModal('Café Coffee Day')">
+            <div class="step-badge">3</div>
+            <div class="row-main"><div class="row-title">Café Coffee Day – Juhu</div><div class="row-sub">1:00 PM · B2B customer</div></div>
+            <span class="pill amber">Pending</span>
+          </div>
+          <div class="list-row">
+            <div class="step-badge">4</div>
+            <div class="row-main"><div class="row-title">Big Bazaar – Vile Parle</div><div class="row-sub">3:30 PM · Retail chain</div></div>
+            <span class="pill amber">Pending</span>
+          </div>
+          <div class="list-row">
+            <div class="step-badge">5</div>
+            <div class="row-main"><div class="row-title">Spencer's – Santacruz</div><div class="row-sub">5:00 PM · New prospect</div></div>
+            <span class="pill purple">New</span>
+          </div>
+        </div>
+        <div class="btn-group">
+          <button class="btn primary full" onclick="goTo('checkin')">📍 Check in to current stop</button>
+          <button class="btn outline full" onclick="openMeetingModal('PJP Stop')">📝 Add meeting note</button>
+        </div>
+      </div>
+      <div id="pjp-week" class="tab-pane">
+        <div style="padding:12px 12px 4px;">
+          <div class="card">
+            <div class="card-body">
+              <div class="card-title">Week 13 completion</div>
+              <div class="score-ring-wrap">
+                <div class="score-ring">
+                  <svg width="80" height="80" viewBox="0 0 80 80">
+                    <circle cx="40" cy="40" r="32" fill="none" stroke="var(--bg3)" stroke-width="8"/>
+                    <circle cx="40" cy="40" r="32" fill="none" stroke="var(--green)" stroke-width="8" stroke-dasharray="201" stroke-dashoffset="60" stroke-linecap="round"/>
+                  </svg>
+                  <div class="score-ring-text">70%</div>
+                </div>
+                <div>
+                  <div style="font-size:14px;font-weight:600;">28 of 40 visits done</div>
+                  <div style="font-size:12px;color:var(--txt3);margin-top:4px;">Mon: 8/8 · Tue: 6/8 · Today: 2/8</div>
+                  <div style="font-size:12px;color:var(--green);margin-top:4px;font-weight:500;">↑ 5% vs last week</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="pjp-month" class="tab-pane">
+        <div style="padding:12px;">
+          <div class="card">
+            <div class="card-body">
+              <div class="card-title">March 2026 weekly visits</div>
+              <div class="bar-chart">
+                <div class="bar-col"><div class="bar-fill" style="height:90%;background:var(--green);"></div><div class="bar-lbl">W1</div></div>
+                <div class="bar-col"><div class="bar-fill" style="height:75%;background:var(--green);"></div><div class="bar-lbl">W2</div></div>
+                <div class="bar-col"><div class="bar-fill" style="height:85%;background:var(--green);"></div><div class="bar-lbl">W3</div></div>
+                <div class="bar-col"><div class="bar-fill" style="height:55%;background:var(--amber);"></div><div class="bar-lbl">W4</div></div>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-body">
+              <div class="card-title">Month summary</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                <div><div style="font-size:11px;color:var(--txt3);">Planned</div><div style="font-size:22px;font-weight:700;color:var(--txt);">218</div></div>
+                <div><div style="font-size:11px;color:var(--txt3);">Completed</div><div style="font-size:22px;font-weight:700;color:var(--green);">148</div></div>
+                <div><div style="font-size:11px;color:var(--txt3);">Missed</div><div style="font-size:22px;font-weight:700;color:var(--coral);">18</div></div>
+                <div><div style="font-size:11px;color:var(--txt3);">Adhoc</div><div style="font-size:22px;font-weight:700;color:var(--blue);">12</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== CHECK IN ===== -->
+    <div class="screen" id="screen-checkin">
+      <div class="map-box">
+        <div class="map-grid"></div>
+        <div class="map-road-h" style="top:40%;"></div>
+        <div class="map-road-h" style="top:65%;"></div>
+        <div class="map-road-v" style="left:30%;"></div>
+        <div class="map-road-v" style="left:70%;"></div>
+        <div class="map-accuracy"></div>
+        <div class="map-pin">
+          <div class="map-pin-dot"></div>
+          <div class="map-pin-label">You are here</div>
+        </div>
+        <div class="map-footer">
+          <div class="gps-dot"></div>
+          <span id="gps-coords">19.0596° N, 72.8295° E · Bandra West, Mumbai</span>
+        </div>
+      </div>
+
+      <div style="padding:12px;">
+        <div class="card" style="margin:0 0 10px;background:var(--green-light);border-color:var(--green);">
+          <div class="list-row" style="background:transparent;border:none;">
+            <div class="row-icon" style="background:var(--green);font-size:18px;">🏬</div>
+            <div class="row-main">
+              <div class="row-title" style="color:var(--green-deep);">Reliance Fresh – Bandra W</div>
+              <div class="row-sub" style="color:var(--green);">✓ Matched · 18m away · PJP stop #2</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin:0 0 10px;">
+          <div class="toggle-row">
+            <div><div class="toggle-label">GPS location</div><div class="toggle-sub">Auto-detected</div></div>
+            <div class="toggle on" onclick="toggleSwitch(this)"></div>
+          </div>
+          <div class="toggle-row">
+            <div><div class="toggle-label">Auto-match outlet</div><div class="toggle-sub">Finds nearest PJP stop</div></div>
+            <div class="toggle on" onclick="toggleSwitch(this)"></div>
+          </div>
+        </div>
+
+        <div class="field"><label>Visit type</label>
+          <select>
+            <option>Scheduled PJP visit</option>
+            <option>Adhoc visit</option>
+            <option>Follow-up</option>
+            <option>New prospect call</option>
+          </select>
+        </div>
+        <div class="field"><label>Contact met</label><input type="text" placeholder="Name & designation" value="Priya Menon (Store Manager)"></div>
+        <div class="field"><label>Meeting notes</label>
+          <textarea placeholder="Discuss orders, branding issues, feedback…">Discussed upcoming summer offer. Manager confirmed shelf space for new SKUs. Follow-up on pending invoice ₹45K.</textarea>
+        </div>
+      </div>
+
+      <div class="checkin-success" id="ci-success">
+        <div class="ci-check">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <div>
+          <div style="font-size:14px;font-weight:600;color:var(--green-deep);">Checked in successfully!</div>
+          <div style="font-size:12px;color:var(--green);" id="ci-time">11:04 AM · Location verified · Synced</div>
+        </div>
+      </div>
+
+      <div class="btn-group">
+        <button class="btn primary full" onclick="doCheckin()">📍 Confirm check-in</button>
+        <button class="btn outline full" onclick="openMeetingModal('Reliance Fresh')">📝 Save meeting note</button>
+      </div>
+    </div>
+
+    <!-- ===== SALES ===== -->
+    <div class="screen" id="screen-sales">
+      <div class="tabs">
+        <div class="tab-item active" onclick="switchTab(this,'sales-mtd')">MTD</div>
+        <div class="tab-item" onclick="switchTab(this,'sales-ytd')">YTD</div>
+        <div class="tab-item" onclick="switchTab(this,'sales-customers')">Customers</div>
+      </div>
+      <div id="sales-mtd" class="tab-pane active">
+        <div class="metrics-grid" style="padding-top:12px;">
+          <div class="metric-card">
+            <div class="metric-label">MTD Revenue</div>
+            <div class="metric-val green"><span style="font-size:14px;">₹</span>42L</div>
+            <div class="prog"><div class="prog-fill" style="width:74%;background:var(--green);"></div></div>
+            <div class="metric-sub">74% of ₹57L target</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Orders placed</div>
+            <div class="metric-val blue">143</div>
+            <div class="prog"><div class="prog-fill" style="width:86%;background:var(--blue);"></div></div>
+            <div class="metric-sub">86% of 166 target</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Avg order size</div>
+            <div class="metric-val amber"><span style="font-size:14px;">₹</span>29K</div>
+            <div class="metric-sub">↑ 8% vs last month</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Overdue</div>
+            <div class="metric-val coral"><span style="font-size:14px;">₹</span>6.1L</div>
+            <div class="metric-sub">4 accounts</div>
+          </div>
+        </div>
+        <div style="padding:4px 12px 0;">
+          <div class="card" style="margin:0 0 10px;">
+            <div class="card-body">
+              <div class="card-title">Daily revenue trend (Mar)</div>
+              <div class="bar-chart">
+                <div class="bar-col"><div class="bar-fill" style="height:55%;background:var(--blue);"></div><div class="bar-lbl">1</div></div>
+                <div class="bar-col"><div class="bar-fill" style="height:72%;background:var(--blue);"></div><div class="bar-lbl">5</div></div>
+                <div class="bar-col"><div class="bar-fill" style="height:65%;background:var(--blue);"></div><div class="bar-lbl">10</div></div>
+                <div class="bar-col"><div class="bar-fill" style="height:90%;background:var(--blue);"></div><div class="bar-lbl">15</div></div>
+                <div class="bar-col"><div class="bar-fill" style="height:60%;background:var(--blue);"></div><div class="bar-lbl">20</div></div>
+                <div class="bar-col"><div class="bar-fill" style="height:80%;background:var(--blue);"></div><div class="bar-lbl">25</div></div>
+                <div class="bar-col"><div class="bar-fill" style="height:40%;background:var(--amber);"></div><div class="bar-lbl">31</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="sales-ytd" class="tab-pane">
+        <div class="metrics-grid" style="padding-top:12px;">
+          <div class="metric-card" style="grid-column:span 2;">
+            <div class="metric-label">YTD Revenue</div>
+            <div class="amount-big">₹1.18 Cr</div>
+            <div class="prog"><div class="prog-fill" style="width:59%;background:var(--green);"></div></div>
+            <div class="metric-sub">59% of ₹2 Cr annual target · FY 2025–26</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">YTD Orders</div>
+            <div class="metric-val blue">512</div>
+            <div class="prog"><div class="prog-fill" style="width:64%;background:var(--blue);"></div></div>
+            <div class="metric-sub">64% of 800 target</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Active accounts</div>
+            <div class="metric-val green">47</div>
+            <div class="metric-sub">↑ 6 new this year</div>
+          </div>
+        </div>
+        <div style="padding:0 12px;">
+          <div class="card" style="margin:0 0 10px;">
+            <div class="card-body">
+              <div class="card-title">Monthly revenue</div>
+              <div class="bar-chart">
+                <div class="bar-col"><div class="bar-fill" style="height:70%;background:var(--green);"></div><div class="bar-lbl">Jan</div></div>
+                <div class="bar-col"><div class="bar-fill" style="height:85%;background:var(--green);"></div><div class="bar-lbl">Feb</div></div>
+                <div class="bar-col"><div class="bar-fill" style="height:74%;background:var(--amber);"></div><div class="bar-lbl">Mar</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="sales-customers" class="tab-pane">
+        <div id="customer-list" class="card" style="margin:12px 12px 10px;">
+          <div class="list-row" onclick="showToast('Opening Metro Supermart account…')">
+            <div class="row-icon" style="background:var(--green-light);">🏪</div>
+            <div class="row-main"><div class="row-title">Metro Supermart</div><div class="row-sub">₹8.4L MTD · ↑ 12%</div></div>
+            <div class="row-right"><span class="pill green">Active</span></div>
+          </div>
+          <div class="list-row" onclick="showToast('Opening Reliance Retail account…')">
+            <div class="row-icon" style="background:var(--blue-light);">🏬</div>
+            <div class="row-main"><div class="row-title">Reliance Retail</div><div class="row-sub">₹6.2L MTD · ↑ 5%</div></div>
+            <div class="row-right"><span class="pill green">Active</span></div>
+          </div>
+          <div class="list-row" onclick="showToast('Opening Café Coffee Day account…')">
+            <div class="row-icon" style="background:var(--amber-light);">☕</div>
+            <div class="row-main"><div class="row-title">Café Coffee Day</div><div class="row-sub">₹3.1L MTD · ↓ 3%</div></div>
+            <div class="row-right"><span class="pill amber">At risk</span></div>
+          </div>
+          <div class="list-row" onclick="showToast('Opening Big Bazaar account…')">
+            <div class="row-icon" style="background:var(--red-light);">🏢</div>
+            <div class="row-main"><div class="row-title">Big Bazaar – Vile Parle</div><div class="row-sub">₹1.8L MTD · Overdue ₹90K</div></div>
+            <div class="row-right"><span class="pill red">Overdue</span></div>
+          </div>
+          <div class="list-row" onclick="showToast('Opening Star Bazaar account…')">
+            <div class="row-icon" style="background:var(--purple-light);">⭐</div>
+            <div class="row-main"><div class="row-title">Star Bazaar – Thane</div><div class="row-sub">₹2.4L MTD · ↑ 18%</div></div>
+            <div class="row-right"><span class="pill green">Active</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== CLAIMS ===== -->
+    <div class="screen" id="screen-claims">
+      <div class="metrics-grid" style="padding-top:12px;">
+        <div class="metric-card">
+          <div class="metric-label">Approved MTD</div>
+          <div class="metric-val green"><span style="font-size:14px;">₹</span>8,240</div>
+          <div class="metric-sub">3 claims</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Pending</div>
+          <div class="metric-val amber"><span style="font-size:14px;">₹</span>3,600</div>
+          <div class="metric-sub">2 claims</div>
+        </div>
+      </div>
+
+      <div class="sec-head">Claim history</div>
+      <div class="card" id="claims-list">
+        <div class="list-row">
+          <div class="row-icon" style="background:var(--amber-light);">🚗</div>
+          <div class="row-main"><div class="row-title">Travel – March W4</div><div class="row-sub">Submitted 29 Mar · 340 km</div></div>
+          <div class="row-right"><div style="font-size:14px;font-weight:600;">₹2,100</div><span class="pill amber">Pending</span></div>
+        </div>
+        <div class="list-row">
+          <div class="row-icon" style="background:var(--amber-light);">🍽️</div>
+          <div class="row-main"><div class="row-title">Client lunch – 26 Mar</div><div class="row-sub">Receipt attached</div></div>
+          <div class="row-right"><div style="font-size:14px;font-weight:600;">₹1,500</div><span class="pill amber">Pending</span></div>
+        </div>
+        <div class="list-row">
+          <div class="row-icon" style="background:var(--green-light);">🚗</div>
+          <div class="row-main"><div class="row-title">Travel – March W3</div><div class="row-sub">Approved 22 Mar</div></div>
+          <div class="row-right"><div style="font-size:14px;font-weight:600;">₹3,780</div><span class="pill green">Approved</span></div>
+        </div>
+        <div class="list-row">
+          <div class="row-icon" style="background:var(--green-light);">🏨</div>
+          <div class="row-main"><div class="row-title">Stay – Pune outstation</div><div class="row-sub">Approved 15 Mar</div></div>
+          <div class="row-right"><div style="font-size:14px;font-weight:600;">₹2,460</div><span class="pill green">Approved</span></div>
+        </div>
+      </div>
+
+      <div class="sec-head">Submit new claim</div>
+      <div class="form-section" style="padding-bottom:12px;">
+        <div class="field"><label>Expense type</label>
+          <select id="claim-type">
+            <option>Travel (km-based)</option>
+            <option>Meal / client entertainment</option>
+            <option>Accommodation</option>
+            <option>Toll / parking</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="field-row">
+          <div class="field" style="margin:0;"><label>Date</label><input type="date" id="claim-date"></div>
+          <div class="field" style="margin:0;"><label>Amount (₹)</label><input type="number" id="claim-amount" placeholder="0.00" min="0"></div>
+        </div>
+        <div class="field" style="margin-top:12px;"><label>Description</label><input type="text" id="claim-desc" placeholder="Brief description…"></div>
+        <button class="btn primary full" style="margin-top:4px;" onclick="submitClaim()">Submit claim</button>
+      </div>
+    </div>
+
+    <!-- ===== BRANDING ===== -->
+    <div class="screen" id="screen-branding">
+      <div style="padding:12px 12px 0;">
+        <div class="card" style="margin:0 0 10px;">
+          <div class="card-body">
+            <div class="card-title">Zone compliance score</div>
+            <div class="score-ring-wrap">
+              <div class="score-ring">
+                <svg width="80" height="80" viewBox="0 0 80 80">
+                  <circle cx="40" cy="40" r="32" fill="none" stroke="var(--bg3)" stroke-width="8"/>
+                  <circle cx="40" cy="40" r="32" fill="none" stroke="var(--green)" stroke-width="8" stroke-dasharray="201" stroke-dashoffset="42" stroke-linecap="round"/>
+                </svg>
+                <div class="score-ring-text">79%</div>
+              </div>
+              <div>
+                <div style="font-size:15px;font-weight:600;">Good compliance</div>
+                <div style="font-size:12px;color:var(--txt3);margin-top:3px;">12 audits this month</div>
+                <div style="font-size:12px;color:var(--green);margin-top:3px;font-weight:500;">↑ 6% vs February</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sec-head">Audit – Reliance Fresh Bandra</div>
+      <div class="card" id="audit-checklist">
+        <div class="toggle-row">
+          <div><div class="toggle-label">Planogram followed</div></div>
+          <div class="toggle on audit-toggle" onclick="toggleSwitch(this)"></div>
+        </div>
+        <div class="toggle-row">
+          <div><div class="toggle-label">Price tags correct & visible</div></div>
+          <div class="toggle on audit-toggle" onclick="toggleSwitch(this)"></div>
+        </div>
+        <div class="toggle-row">
+          <div><div class="toggle-label">Shelf share ≥ 30%</div></div>
+          <div class="toggle audit-toggle" onclick="toggleSwitch(this)"></div>
+        </div>
+        <div class="toggle-row">
+          <div><div class="toggle-label">Display unit in place</div></div>
+          <div class="toggle on audit-toggle" onclick="toggleSwitch(this)"></div>
+        </div>
+        <div class="toggle-row">
+          <div><div class="toggle-label">Promotional material visible</div></div>
+          <div class="toggle audit-toggle" onclick="toggleSwitch(this)"></div>
+        </div>
+        <div class="toggle-row">
+          <div><div class="toggle-label">Product freshness OK</div></div>
+          <div class="toggle on audit-toggle" onclick="toggleSwitch(this)"></div>
+        </div>
+        <div class="toggle-row" style="border:none;">
+          <div><div class="toggle-label">FIFO rotation correct</div></div>
+          <div class="toggle on audit-toggle" onclick="toggleSwitch(this)"></div>
+        </div>
+      </div>
+
+      <div class="form-section" style="padding-bottom:12px;">
+        <div class="field"><label>Audit notes / issues found</label>
+          <textarea placeholder="Describe gaps, deviations, or actions taken…"></textarea>
+        </div>
+        <button class="btn primary full" onclick="submitAudit()">Submit audit report</button>
+      </div>
+    </div>
+
+    <!-- ===== LEADS ===== -->
+    <div class="screen" id="screen-leads">
+      <div class="metrics-grid" style="padding-top:12px;">
+        <div class="metric-card">
+          <div class="metric-label">Total leads</div>
+          <div class="metric-val blue">38</div>
+          <div class="metric-sub">This quarter</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Converted</div>
+          <div class="metric-val green">14</div>
+          <div class="metric-sub">37% conversion</div>
+        </div>
+      </div>
+
+      <div class="sec-head">Pipeline <span style="font-weight:400;font-size:12px;color:var(--txt3);">(tap to update)</span></div>
+      <div class="card" id="leads-list">
+        <!-- Populated by JS -->
+      </div>
+
+      <div class="btn-group">
+        <button class="btn primary full" onclick="openLeadModal()">+ Add new lead</button>
+      </div>
+    </div>
+
+    <!-- ===== NOTIFICATIONS ===== -->
+    <div class="screen" id="screen-notifications">
+      <div style="padding:12px 0 0;">
+        <div class="notif-item unread">
+          <div style="display:flex;gap:10px;">
+            <div class="notif-dot" style="background:var(--amber);"></div>
+            <div>
+              <div style="font-size:14px;font-weight:600;">Claim approval needed</div>
+              <div style="font-size:13px;color:var(--txt2);margin-top:2px;">Travel claim ₹2,100 is pending manager sign-off</div>
+              <div style="font-size:11px;color:var(--txt3);margin-top:4px;">Today · 9:30 AM</div>
+            </div>
+          </div>
+        </div>
+        <div class="notif-item unread">
+          <div style="display:flex;gap:10px;">
+            <div class="notif-dot" style="background:var(--green);"></div>
+            <div>
+              <div style="font-size:14px;font-weight:600;">PJP updated by manager</div>
+              <div style="font-size:13px;color:var(--txt2);margin-top:2px;">Spencer's Santacruz added to today's route</div>
+              <div style="font-size:11px;color:var(--txt3);margin-top:4px;">Today · 8:45 AM</div>
+            </div>
+          </div>
+        </div>
+        <div class="notif-item unread">
+          <div style="display:flex;gap:10px;">
+            <div class="notif-dot" style="background:var(--blue);"></div>
+            <div>
+              <div style="font-size:14px;font-weight:600;">Lead follow-up due</div>
+              <div style="font-size:13px;color:var(--txt2);margin-top:2px;">Heritage Fresh – Powai · Demo scheduled 2 Apr</div>
+              <div style="font-size:11px;color:var(--txt3);margin-top:4px;">Yesterday · 6:00 PM</div>
+            </div>
+          </div>
+        </div>
+        <div class="notif-item">
+          <div style="display:flex;gap:10px;">
+            <div class="notif-dot" style="background:var(--green);"></div>
+            <div>
+              <div style="font-size:14px;font-weight:600;">Claim approved</div>
+              <div style="font-size:13px;color:var(--txt2);margin-top:2px;">Travel claim ₹3,780 has been approved by Suresh M</div>
+              <div style="font-size:11px;color:var(--txt3);margin-top:4px;">22 Mar · 2:15 PM</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== PROFILE ===== -->
+    <div class="screen" id="screen-profile">
+      <div class="profile-header">
+        <div class="profile-avatar">RK</div>
+        <div class="profile-name">Ravi Kumar</div>
+        <div class="profile-role">Senior Sales Executive · Mumbai West Zone</div>
+        <div class="profile-stats">
+          <div class="profile-stat"><div class="ps-val">5.2yr</div><div class="ps-lbl">Tenure</div></div>
+          <div class="profile-stat"><div class="ps-val">A+</div><div class="ps-lbl">Rating</div></div>
+          <div class="profile-stat"><div class="ps-val">74%</div><div class="ps-lbl">Target</div></div>
+          <div class="profile-stat"><div class="ps-val">47</div><div class="ps-lbl">Accounts</div></div>
+        </div>
+      </div>
+      <div style="padding:12px 0;">
+        <div class="card">
+          <div class="toggle-row" onclick="showToast('Opening account settings…')">
+            <div class="toggle-label">Account & territory</div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--txt3)" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+          </div>
+          <div class="toggle-row" onclick="showToast('Opening notification preferences…')">
+            <div class="toggle-label">Notification preferences</div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--txt3)" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+          </div>
+          <div class="toggle-row" onclick="showToast('Opening target history…')">
+            <div class="toggle-label">Target & incentives history</div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--txt3)" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+          </div>
+          <div class="toggle-row" onclick="showToast('Generating performance report…')">
+            <div class="toggle-label">Download performance report</div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--txt3)" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+          </div>
+          <div class="toggle-row" style="border:none;" onclick="showToast('Opening help center…')">
+            <div class="toggle-label">Help & support</div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--txt3)" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+          </div>
+        </div>
+        <div style="padding:4px 12px 0;">
+          <button class="btn full" style="background:var(--red-light);color:var(--red);font-weight:600;border:1px solid var(--red);" onclick="showToast('Logging out…')">Sign out</button>
+        </div>
+        <div style="text-align:center;padding:16px;font-size:11px;color:var(--txt3);">SalesForce Pro v1.0.0 · Built with ♥ for field teams</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Bottom nav -->
+  <div class="bottomnav">
+    <button class="bnav-item active" id="nav-home" onclick="goTo('home')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Home<div class="bnav-dot"></div>
+    </button>
+    <button class="bnav-item" id="nav-pjp" onclick="goTo('pjp')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg>
+      PJP<div class="bnav-dot"></div>
+    </button>
+    <button class="bnav-item" id="nav-sales" onclick="goTo('sales')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Sales<div class="bnav-dot"></div>
+    </button>
+    <button class="bnav-item" id="nav-leads" onclick="goTo('leads')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+      Leads<div class="bnav-dot"></div>
+    </button>
+    <button class="bnav-item" id="nav-claims" onclick="goTo('claims')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+      Claims<div class="bnav-dot"></div>
+    </button>
+  </div>
+</div>
+
+<script>
+// ===== APP STATE =====
+const state = {
+  currentScreen: 'home',
+  leads: [
+    { id:1, name:"D-Mart – Malad West", contact:"Rajesh Kumar (GM)", phone:"+91 98765 43210", stage:"New", notes:"Reached out via LinkedIn", date:"Today" },
+    { id:2, name:"Heritage Fresh – Powai", contact:"Anjali Singh (Buyer)", phone:"+91 87654 32109", stage:"Demo", notes:"Demo scheduled 2 Apr", date:"28 Mar" },
+    { id:3, name:"Sahakari Bhandar – Dadar", contact:"Mr. Patil (Owner)", phone:"+91 76543 21098", stage:"Proposal", notes:"Sent proposal ₹2.4L/month", date:"22 Mar" },
+    { id:4, name:"Star Bazaar – Thane", contact:"Deepa Nair (Category Mgr)", phone:"+91 65432 10987", stage:"Won", notes:"PO received ₹1.8L", date:"15 Mar" },
+    { id:5, name:"Foodhall – BKC", contact:"Unknown", phone:"", stage:"Cold", notes:"No response after 3 follow-ups", date:"10 Mar" },
+  ],
+  checkedIn: false,
+  meetingNotes: []
+};
+
+const stageColors = { New:'blue', Contacted:'blue', Demo:'amber', Proposal:'amber', Negotiation:'purple', Won:'green', Cold:'red' };
+const screenTitles = { home:'SalesForce Pro', pjp:'Journey Plan', checkin:'Geo Check-In', sales:'B2B Sales', claims:'Expense Claims', branding:'Branding Audit', leads:'Lead Management', notifications:'Notifications', profile:'My Profile' };
+const navScreens = ['home','pjp','sales','leads','claims'];
+
+// ===== NAVIGATION =====
+function goTo(screenId) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const target = document.getElementById('screen-' + screenId);
+  if (!target) return;
+  target.classList.add('active');
+  state.currentScreen = screenId;
+
+  // Update title
+  document.getElementById('nav-title').textContent = screenTitles[screenId] || screenId;
+
+  // Back button
+  const backBtn = document.getElementById('back-btn');
+  if (navScreens.includes(screenId)) {
+    backBtn.classList.remove('visible');
+  } else {
+    backBtn.classList.add('visible');
+  }
+
+  // Bottom nav highlight
+  document.querySelectorAll('.bnav-item').forEach(n => n.classList.remove('active'));
+  const navEl = document.getElementById('nav-' + screenId);
+  if (navEl) navEl.classList.add('active');
+
+  // Scroll top
+  target.scrollTop = 0;
+}
+
+function goBack() {
+  goTo('home');
+}
+
+// ===== TABS =====
+function switchTab(tabEl, contentId) {
+  const tabsContainer = tabEl.parentElement;
+  const screen = tabEl.closest('.screen');
+  tabsContainer.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+  tabEl.classList.add('active');
+  screen.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  const pane = document.getElementById(contentId);
+  if (pane) pane.classList.add('active');
+}
+
+// ===== TOGGLE =====
+function toggleSwitch(el) { el.classList.toggle('on'); }
+
+// ===== TOAST =====
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.display = 'block';
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(() => { t.style.display = 'none'; }, 2400);
+}
+
+// ===== LEADS =====
+function renderLeads() {
+  const list = document.getElementById('leads-list');
+  if (!list) return;
+  list.innerHTML = '';
+  state.leads.forEach(lead => {
+    const stageColor = stageColors[lead.stage] || 'blue';
+    const icons = { New:'🆕', Contacted:'📞', Demo:'🤝', Proposal:'📄', Negotiation:'💬', Won:'✅', Cold:'❄️' };
+    const icon = icons[lead.stage] || '👤';
+    const row = document.createElement('div');
+    row.className = 'list-row';
+    row.innerHTML = `
+      <div class="status-dot ${stageColor}"></div>
+      <div class="row-main">
+        <div class="row-title">${lead.name}</div>
+        <div class="row-sub">${lead.contact || 'No contact'} · ${lead.date}</div>
+      </div>
+      <span class="pill ${stageColor}">${lead.stage}</span>
+    `;
+    row.onclick = () => showToast(`${lead.name} · ${lead.notes || 'No notes'}`);
+    list.appendChild(row);
+  });
+}
+
+function openLeadModal() {
+  document.getElementById('leadModal').classList.add('show');
+}
+function closeLeadModal() {
+  document.getElementById('leadModal').classList.remove('show');
+}
+
+function saveLead() {
+  const name = document.getElementById('lead-name').value.trim();
+  const contact = document.getElementById('lead-contact').value.trim();
+  const phone = document.getElementById('lead-phone').value.trim();
+  const stage = document.getElementById('lead-stage').value;
+  const notes = document.getElementById('lead-notes').value.trim();
+  if (!name) { showToast('Please enter a business name'); return; }
+  state.leads.unshift({ id: Date.now(), name, contact, phone, stage, notes, date: 'Today' });
+  renderLeads();
+  closeLeadModal();
+  document.getElementById('lead-name').value = '';
+  document.getElementById('lead-contact').value = '';
+  document.getElementById('lead-phone').value = '';
+  document.getElementById('lead-notes').value = '';
+  showToast('Lead saved successfully ✓');
+  saveToStorage();
+}
+
+// ===== MEETING NOTES =====
+function openMeetingModal(customer) {
+  document.getElementById('meeting-modal-title').textContent = `Meeting notes${customer ? ' – ' + customer : ''}`;
+  document.getElementById('meeting-customer').value = customer || '';
+  document.getElementById('meetingModal').classList.add('show');
+}
+function closeMeetingModal() {
+  document.getElementById('meetingModal').classList.remove('show');
+}
+
+function saveMeetingNote() {
+  const customer = document.getElementById('meeting-customer').value.trim();
+  const notes = document.getElementById('meeting-notes').value.trim();
+  if (!notes) { showToast('Please add meeting notes'); return; }
+  state.meetingNotes.unshift({ customer, notes, date: new Date().toLocaleTimeString('en-IN', {hour:'2-digit',minute:'2-digit'}), outcome: document.getElementById('meeting-outcome').value });
+  closeMeetingModal();
+  document.getElementById('meeting-notes').value = '';
+  showToast('Meeting note saved ✓');
+  saveToStorage();
+}
+
+// ===== CHECK IN =====
+function doCheckin() {
+  state.checkedIn = true;
+  const now = new Date().toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit'});
+  document.getElementById('ci-time').textContent = `${now} · Location verified · Synced`;
+  const el = document.getElementById('ci-success');
+  el.classList.add('show');
+  showToast('Checked in successfully! 📍');
+  setTimeout(() => el.classList.remove('show'), 5000);
+  saveToStorage();
+}
+
+// ===== CLAIMS =====
+function submitClaim() {
+  const type = document.getElementById('claim-type').value;
+  const amount = document.getElementById('claim-amount').value;
+  const desc = document.getElementById('claim-desc').value.trim();
+  if (!amount || parseFloat(amount) <= 0) { showToast('Please enter a valid amount'); return; }
+  const list = document.getElementById('claims-list');
+  const row = document.createElement('div');
+  row.className = 'list-row';
+  row.innerHTML = `
+    <div class="row-icon" style="background:var(--amber-light);">💸</div>
+    <div class="row-main"><div class="row-title">${type}</div><div class="row-sub">${desc || 'Just submitted'}</div></div>
+    <div class="row-right"><div style="font-size:14px;font-weight:600;">₹${parseFloat(amount).toLocaleString('en-IN')}</div><span class="pill amber">Pending</span></div>
+  `;
+  list.insertBefore(row, list.firstChild);
+  document.getElementById('claim-amount').value = '';
+  document.getElementById('claim-desc').value = '';
+  showToast('Claim submitted for approval ✓');
+  saveToStorage();
+}
+
+// ===== AUDIT =====
+function submitAudit() {
+  const toggles = document.querySelectorAll('.audit-toggle');
+  let passed = 0;
+  toggles.forEach(t => { if (t.classList.contains('on')) passed++; });
+  const score = Math.round((passed / toggles.length) * 100);
+  showToast(`Audit submitted · Score: ${score}% ✓`);
+}
+
+// ===== LOCAL STORAGE =====
+function saveToStorage() {
+  try {
+    localStorage.setItem('sfp_leads', JSON.stringify(state.leads));
+    localStorage.setItem('sfp_notes', JSON.stringify(state.meetingNotes));
+  } catch(e) {}
+}
+
+function loadFromStorage() {
+  try {
+    const leads = localStorage.getItem('sfp_leads');
+    const notes = localStorage.getItem('sfp_notes');
+    if (leads) state.leads = JSON.parse(leads);
+    if (notes) state.meetingNotes = JSON.parse(notes);
+  } catch(e) {}
+}
+
+// ===== TIME =====
+function updateTime() {
+  const now = new Date();
+  document.getElementById('time-display').textContent = now.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit' });
+}
+setInterval(updateTime, 10000);
+updateTime();
+
+// ===== DATE =====
+const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const now = new Date();
+document.getElementById('hero-date').textContent = `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()} · Mumbai West`;
+
+// ===== GPS SIMULATION =====
+if ('geolocation' in navigator) {
+  navigator.geolocation.getCurrentPosition(pos => {
+    const { latitude, longitude } = pos.coords;
+    document.getElementById('gps-coords').textContent = `${latitude.toFixed(4)}° N, ${longitude.toFixed(4)}° E · Location detected`;
+    document.getElementById('location-status').textContent = `Live GPS ●`;
+  }, () => {});
+}
+
+// ===== CLOSE MODALS ON OVERLAY CLICK =====
+document.getElementById('leadModal').addEventListener('click', function(e) {
+  if (e.target === this) closeLeadModal();
+});
+document.getElementById('meetingModal').addEventListener('click', function(e) {
+  if (e.target === this) closeMeetingModal();
+});
+
+// ===== OFFLINE DETECTION =====
+window.addEventListener('offline', () => { document.getElementById('offline-banner').style.display = 'block'; });
+window.addEventListener('online', () => { document.getElementById('offline-banner').style.display = 'none'; showToast('Back online · Syncing…'); });
+
+// ===== INIT =====
+loadFromStorage();
+renderLeads();
+
+// Register service worker
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').then(reg => {
+      console.log('SW registered:', reg.scope);
+    }).catch(err => console.log('SW registration failed:', err));
+  });
+}
+</script>
+</body>
+</html>
